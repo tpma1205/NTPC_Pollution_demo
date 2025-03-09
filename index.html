@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <title>營建空污費申報系統 Demo</title>
+    <style>
+      /* Reset */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      /* 全站背景 */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f4f7f9;
+        color: #333;
+        line-height: 1.6;
+      }
+      /* 主要容器 */
+      .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+      /* 頁首 */
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      header h1 {
+        font-size: 2rem;
+        color: #2c3e50;
+      }
+      /* 卡片樣式 */
+      .card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      /* 標題 */
+      h2 {
+        margin-bottom: 15px;
+        color: #34495e;
+      }
+      /* 表單群組 */
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      /* 輸入框與錯誤訊息 */
+      .input-wrapper {
+        display: inline-flex;
+        align-items: center;
+      }
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      select {
+        width: 280px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: border-color 0.2s ease;
+      }
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      input[type="date"]:focus,
+      select:focus {
+        border-color: #3498db;
+        outline: none;
+      }
+      .error-msg {
+        color: #e74c3c;
+        font-size: 0.9rem;
+        margin-left: 8px;
+      }
+      /* 按鈕 */
+      button {
+        padding: 10px 20px;
+        background: #3498db;
+        border: none;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      button:hover {
+        background: #2980b9;
+      }
+      /* 全局錯誤提示 */
+      .global-error {
+        color: #e74c3c;
+        text-align: center;
+        margin-top: 10px;
+      }
+      /* 文件上傳預覽區 */
+      .file-item {
+        margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .file-name {
+        margin-right: 10px;
+      }
+      /* 移除數字輸入框的 spinner (Chrome, Safari, Edge, Opera) */
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>營建空污費申報系統 Demo</h1>
+      </header>
+
+      <section id="step1" class="card">
+        <h2>步驟 1：選擇工程類別</h2>
+        <select id="projectType">
+          <option value="">請選擇工程類別</option>
+          <option value="RC">RC</option>
+          <option value="SRC">SRC</option>
+          <option value="拆除">拆除</option>
+          <option value="道路">道路</option>
+          <option value="隧道">隧道</option>
+          <option value="管線">管線</option>
+          <option value="橋樑">橋樑</option>
+          <option value="社區">社區</option>
+          <option value="工業區">工業區</option>
+          <option value="遊樂園">遊樂園</option>
+          <option value="疏濬">疏濬</option>
+          <option value="其他">其他</option>
+        </select>
+      </section>
+
+      <section id="step2" class="card" style="display: none">
+        <h2>步驟 2：填寫工程資訊</h2>
+        <form id="projectForm">
+          <div id="commonFields">
+            <div class="form-group">
+              <label for="projectCost">工程經費（元）：</label>
+              <div class="input-wrapper">
+                <input type="number" id="projectCost" step="1" required />
+                <span class="error-msg" id="projectCostError"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="environmentalCost">工程環保經費（元）：</label>
+              <div class="input-wrapper">
+                <input type="number" id="environmentalCost" step="1" required />
+                <span class="error-msg" id="environmentalCostError"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="startDate">預計施工起日：</label>
+              <div class="input-wrapper">
+                <input type="date" id="startDate" required />
+                <span class="error-msg" id="startDateError"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="endDate">預計施工迄日：</label>
+              <div class="input-wrapper">
+                <input type="date" id="endDate" required />
+                <span class="error-msg" id="endDateError"></span>
+              </div>
+            </div>
+          </div>
+          <div id="specificFields"></div>
+        </form>
+      </section>
+
+      <section id="step3" class="card" style="display: none">
+        <h2>步驟 3：上傳文件</h2>
+        <input type="file" id="fileUpload" />
+        <div id="filePreview"></div>
+      </section>
+
+      <section id="step4" class="card" style="display: none">
+        <h2>步驟 4：確認</h2>
+        <button id="confirmBtn">確認資料</button>
+      </section>
+
+      <div id="errorMessages" class="global-error"></div>
+    </div>
+
+    <script>
+      // 取得頁面元素
+      const projectTypeSelect = document.getElementById("projectType");
+      const step2 = document.getElementById("step2");
+      const step3 = document.getElementById("step3");
+      const step4 = document.getElementById("step4");
+      const projectForm = document.getElementById("projectForm");
+      const specificFields = document.getElementById("specificFields");
+      const errorMessages = document.getElementById("errorMessages");
+      const confirmBtn = document.getElementById("confirmBtn");
+      const fileUpload = document.getElementById("fileUpload");
+      const filePreview = document.getElementById("filePreview");
+
+      // 工程類別對應的欄位定義
+      const fieldDefinitions = {
+        RC: [
+          "基地面積(平方公尺)",
+          "建築面積(平方公尺)",
+          "總樓地板面積(平方公尺)",
+          "外運土石體積(鬆方)(立方公尺)",
+        ],
+        SRC: [
+          "基地面積(平方公尺)",
+          "建築面積(平方公尺)",
+          "總樓地板面積(平方公尺)",
+          "外運土石體積(鬆方)(立方公尺)",
+        ],
+        拆除: ["總樓地板面積(平方公尺)", "外運土石體積(鬆方)(立方公尺)"],
+        道路: [
+          "施工面積(平方公尺)",
+          "道路長度(公尺)",
+          "外運土石體積(鬆方)(立方公尺)",
+        ],
+        隧道: [
+          "隧道平面面積(平方公尺)",
+          "隧道長度(公尺)",
+          "外運土石體積(鬆方)(立方公尺)",
+        ],
+        管線: [
+          "施工面積(平方公尺)",
+          "道路長度(公尺)",
+          "外運土石體積(鬆方)(立方公尺)",
+        ],
+        橋樑: [
+          "橋面面積(平方公尺)",
+          "橋面長度(公尺)",
+          "外運土石體積(鬆方)(立方公尺)",
+        ],
+        社區: ["施工面積(公頃)", "外運土石體積(鬆方)(立方公尺)"],
+        工業區: ["施工面積(公頃)", "外運土石體積(鬆方)(立方公尺)"],
+        遊樂園: ["施工面積(公頃)", "外運土石體積(鬆方)(立方公尺)"],
+        疏濬: ["施工面積(平方公尺)", "外運土石體積(鬆方)(立方公尺)"],
+        其他: ["施工面積(平方公尺)", "外運土石體積(鬆方)(立方公尺)"],
+      };
+
+      // 當使用者更換工程類別（管制編號）時，重置表單與檔案上傳預覽
+      projectTypeSelect.addEventListener("change", function () {
+        projectForm.reset();
+        document
+          .querySelectorAll(".error-msg")
+          .forEach((el) => (el.textContent = ""));
+        specificFields.innerHTML = "";
+        filePreview.innerHTML = "";
+        fileUpload.value = "";
+
+        const projectType = this.value;
+        if (projectType) {
+          step2.style.display = "block";
+          step3.style.display = "block";
+          step4.style.display = "block";
+          generateSpecificFields(projectType);
+        } else {
+          step2.style.display = "none";
+          step3.style.display = "none";
+          step4.style.display = "none";
+        }
+      });
+
+      // 動態產生欄位，使用「工程類別 + 索引」作為唯一 ID
+      function generateSpecificFields(projectType) {
+        specificFields.innerHTML = "";
+        const fields = fieldDefinitions[projectType];
+        let htmlContent = "";
+        fields.forEach((field, index) => {
+          const uniqueId = `field_${projectType}_${index}`;
+          const unit = field.includes("(公頃)")
+            ? "公頃"
+            : field.includes("(公尺)")
+            ? "公尺"
+            : field.includes("(立方公尺)")
+            ? "立方公尺"
+            : "平方公尺";
+          htmlContent += `
+          <label for="${uniqueId}">${field}：</label>
+          <div class="input-wrapper">
+            <input type="number" id="${uniqueId}" data-unit="${unit}" required>
+            <span class="error-msg" id="${uniqueId}Error"></span>
+          </div><br>
+        `;
+        });
+        specificFields.innerHTML = htmlContent;
+        addInputEventListeners();
+      }
+
+      function addInputEventListeners() {
+        const inputs = projectForm.querySelectorAll("input");
+        inputs.forEach((input) => {
+          input.addEventListener("input", function () {
+            validateField(this);
+            if (this.type === "date") {
+              validateDates();
+            }
+          });
+        });
+      }
+
+      function validateField(input) {
+        const errorSpan = document.getElementById(`${input.id}Error`);
+        errorSpan.textContent = "";
+        let errorMessage = "";
+        const inputVal = input.value.trim();
+        if (!inputVal && input.required) {
+          errorMessage = "此為必填欄位。";
+        } else if (input.type === "date") {
+          if (!inputVal) {
+            errorMessage = "請選擇日期。";
+          }
+        } else if (input.type === "number" && inputVal) {
+          if (isNaN(inputVal)) {
+            errorMessage = "必須為數字。";
+          } else {
+            if (
+              input.id === "projectCost" ||
+              input.id === "environmentalCost"
+            ) {
+              const integerRegex = /^[1-9]\d*$/;
+              if (!integerRegex.test(inputVal)) {
+                errorMessage = "必須為正整數。";
+              }
+            } else {
+              const decimalRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
+              if (!decimalRegex.test(inputVal)) {
+                errorMessage = "必須為正數且小數點後最多兩位。";
+              } else if (parseFloat(inputVal) <= 0) {
+                errorMessage = "必須大於 0。";
+              }
+            }
+          }
+        }
+        errorSpan.textContent = errorMessage;
+        return !errorMessage;
+      }
+
+      function validateDates() {
+        const startDateEl = document.getElementById("startDate");
+        const endDateEl = document.getElementById("endDate");
+        const startDateError = document.getElementById("startDateError");
+        const endDateError = document.getElementById("endDateError");
+        if (startDateError) startDateError.textContent = "";
+        if (endDateError) endDateError.textContent = "";
+        const startDateVal = startDateEl.value.trim();
+        const endDateVal = endDateEl.value.trim();
+        if (startDateVal && endDateVal) {
+          const startDateObj = new Date(startDateVal);
+          const endDateObj = new Date(endDateVal);
+          if (endDateObj < startDateObj) {
+            endDateError.textContent = "施工迄日不得早於施工起日。";
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function validateForm() {
+        const form = projectForm.elements;
+        let isValid = true;
+        for (let i = 0; i < form.length; i++) {
+          const element = form[i];
+          if (element.type !== "button") {
+            if (!validateField(element)) {
+              isValid = false;
+            }
+          }
+        }
+        if (!validateDates()) {
+          isValid = false;
+        }
+        return isValid;
+      }
+
+      confirmBtn.addEventListener("click", function () {
+        errorMessages.textContent = "";
+        if (!validateForm()) {
+          return;
+        }
+        alert("資料驗證成功！");
+        // 如果有上傳檔案，觸發下載（檔案會下載至瀏覽器的預設下載目錄）
+        if (fileUpload.files.length > 0) {
+          const file = fileUpload.files[0];
+          const url = URL.createObjectURL(file);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+      });
+
+      // 檔案上傳預覽與刪除功能
+      fileUpload.addEventListener("change", function () {
+        const file = fileUpload.files[0];
+        if (file) {
+          filePreview.innerHTML = "";
+          const fileItem = document.createElement("div");
+          fileItem.className = "file-item";
+          fileItem.innerHTML = `
+          <span class="file-name">${file.name}</span>
+          <button type="button" class="delete-btn">刪除</button>
+        `;
+          filePreview.appendChild(fileItem);
+          fileItem
+            .querySelector(".delete-btn")
+            .addEventListener("click", function () {
+              fileUpload.value = "";
+              filePreview.innerHTML = "";
+            });
+        }
+      });
+
+      // 為日期欄位加上變更事件，即時檢查日期先後
+      const startDateEl = document.getElementById("startDate");
+      const endDateEl = document.getElementById("endDate");
+      if (startDateEl && endDateEl) {
+        startDateEl.addEventListener("change", validateDates);
+        endDateEl.addEventListener("change", validateDates);
+      }
+    </script>
+  </body>
+</html>
